@@ -21,10 +21,35 @@ export default function Login() {
       const data: Usuario = await res.json();
       localStorage.setItem("usuario", JSON.stringify(data));
 
-      if (rol === "alumno") navigate("/alumno-dashboard"); // ✅ corregido
-      else navigate("/instructor-dashboard");               // ✅ corregido
+      if (rol === "alumno") navigate("/alumno-dashboard");
+      else navigate("/instructor-dashboard");
     } catch (err) {
       console.error("Error al registrar:", err);
+    }
+  };
+
+  const ingresar = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, rol }),
+      });
+
+      const data: Usuario = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Error al iniciar sesión");
+        return;
+      }
+
+      localStorage.setItem("usuario", JSON.stringify(data));
+
+      if (data.rol === "alumno") navigate("/alumno-dashboard");
+      else navigate("/instructor-dashboard");
+    } catch (err) {
+      console.error("Error al iniciar sesión:", err);
+      alert("No se pudo conectar con el servidor");
     }
   };
 
@@ -63,7 +88,7 @@ export default function Login() {
           <button style={styles.button} onClick={registrar}>
             Registrarse
           </button>
-          <button style={{ ...styles.button, backgroundColor: "#222" }} onClick={registrar}>
+          <button style={{ ...styles.button, backgroundColor: "#222" }} onClick={ingresar}>
             Ingresar
           </button>
         </div>

@@ -1,22 +1,31 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import AlumnoDashboard from "./pages/AlumnoDashboard";
 import InstructorDashboard from "./pages/InstructorDashboard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
-  const usuario = localStorage.getItem("usuario");
-
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+
         <Route
           path="/alumno-dashboard"
-          element={usuario ? <AlumnoDashboard /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute>
+              <AlumnoDashboard />
+            </ProtectedRoute>
+          }
         />
+
         <Route
           path="/instructor-dashboard"
-          element={usuario ? <InstructorDashboard /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute>
+              <InstructorDashboard />
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </BrowserRouter>

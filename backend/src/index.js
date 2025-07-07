@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
-// Registro de usuario
+// ✅ Registro de usuario
 app.post("/register", async (req, res) => {
   const { nombre, email, nivel, rol } = req.body;
 
@@ -28,17 +28,21 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// Login por email
+// ✅ Login por email y rol
 app.post("/login", async (req, res) => {
-  const { email } = req.body;
+  const { email, rol } = req.body;
+
+  if (!email || !rol) {
+    return res.status(400).json({ error: "Email y rol son requeridos" });
+  }
 
   try {
-    const usuario = await prisma.usuario.findUnique({
-      where: { email },
+    const usuario = await prisma.usuario.findFirst({
+      where: { email, rol },
     });
 
     if (!usuario) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return res.status(401).json({ error: "Usuario o rol incorrectos" });
     }
 
     res.json(usuario);
@@ -47,7 +51,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Obtener usuarios por rol (opcional)
+// ✅ Obtener usuarios por rol (opcional)
 app.get("/usuarios", async (req, res) => {
   const { rol } = req.query;
   const where = rol ? { rol } : {};
@@ -63,7 +67,7 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// Asignar rutina a usuario
+// ✅ Asignar rutina a usuario
 app.post("/rutinas", async (req, res) => {
   const { nombre, tipo, ejercicios, usuarioId } = req.body;
 
@@ -82,7 +86,7 @@ app.post("/rutinas", async (req, res) => {
   }
 });
 
-// Obtener rutina(s) de un usuario
+// ✅ Obtener rutina(s) de un usuario
 app.get("/rutinas/:usuarioId", async (req, res) => {
   const { usuarioId } = req.params;
 
@@ -103,7 +107,7 @@ app.get("/rutinas/:usuarioId", async (req, res) => {
   }
 });
 
-// Activar suscripción (simulada)
+// ✅ Activar suscripción (simulada)
 app.put("/suscripcion/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -118,7 +122,7 @@ app.put("/suscripcion/:id", async (req, res) => {
   }
 });
 
-// Inicio del servidor
+// ✅ Inicio del servidor
 app.listen(4000, () => {
   console.log(" Backend corriendo en http://localhost:4000");
 });
