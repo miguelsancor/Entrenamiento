@@ -1,0 +1,10 @@
+-- CreateTable
+CREATE TABLE "Progreso" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "usuarioId" INTEGER NOT NULL,
+    "rutinaId" INTEGER NOT NULL,
+    "fecha" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completado" BOOLEAN NOT NULL DEFAULT false,
+    CONSTRAINT "Progreso_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Progreso_rutinaId_fkey" FOREIGN KEY ("rutinaId") REFERENCES "Rutina" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

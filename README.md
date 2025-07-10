@@ -66,3 +66,8 @@ npm run dev
 - Los usuarios se almacenan con nombre, email, rol (`alumno` o `instructor`) y contraseña.
 - Las rutinas se asignan desde el dashboard del instructor.
 - El alumno solo ve sus propias rutinas.
+
+- Agregar nuevo campo en el backend
+```
+npx prisma migrate dev --name add-dias-a-rutina
+---

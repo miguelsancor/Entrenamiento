@@ -8,22 +8,36 @@ datasource db {
 }
 
 model Usuario {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   nombre       String
-  email        String    @unique
+  email        String     @unique
   nivel        String
-  rol          String    @default("alumno")
-  suscripcion  Boolean   @default(false)
+  rol          String     @default("alumno")
+  suscripcion  Boolean    @default(false)
   rutinas      Rutina[]
-  creadoEn     DateTime  @default(now())
+  progresos    Progreso[]
+  creadoEn     DateTime   @default(now())
 }
 
-
 model Rutina {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  tipo      String
+  id         Int        @id @default(autoincrement())
+  nombre     String
+  tipo       String
   ejercicios String
-  usuarioId Int
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  dias       String
+  usuarioId  Int
+  usuario    Usuario    @relation(fields: [usuarioId], references: [id])
+  progresos  Progreso[]
+}
+
+model Progreso {
+  id         Int      @id @default(autoincrement())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId  Int
+  rutina     Rutina   @relation(fields: [rutinaId], references: [id])
+  rutinaId   Int
+  fecha      DateTime @default(now())
+  completado Boolean  @default(false)
+
+  @@unique([usuarioId, rutinaId]) // <- necesario para upsert
 }

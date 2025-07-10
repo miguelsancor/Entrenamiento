@@ -51,7 +51,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Obtener usuarios por rol (opcional)
+// ✅ Obtener usuarios por rol
 app.get("/usuarios", async (req, res) => {
   const { rol } = req.query;
   const where = rol ? { rol } : {};
@@ -67,9 +67,9 @@ app.get("/usuarios", async (req, res) => {
   }
 });
 
-// ✅ Asignar rutina a usuario
+// ✅ Asignar rutina
 app.post("/rutinas", async (req, res) => {
-  const { nombre, tipo, ejercicios, usuarioId } = req.body;
+  const { nombre, tipo, ejercicios, dias, usuarioId } = req.body;
 
   try {
     const rutina = await prisma.rutina.create({
@@ -77,6 +77,7 @@ app.post("/rutinas", async (req, res) => {
         nombre,
         tipo,
         ejercicios: JSON.stringify(ejercicios),
+        dias: JSON.stringify(dias),
         usuarioId,
       },
     });
@@ -95,10 +96,10 @@ app.get("/rutinas/:usuarioId", async (req, res) => {
       where: { usuarioId: parseInt(usuarioId) },
     });
 
-    // Convertir ejercicios de string a objeto
     const result = rutinas.map((r) => ({
       ...r,
       ejercicios: JSON.parse(r.ejercicios),
+      dias: JSON.parse(r.dias),
     }));
 
     res.json(result);
@@ -107,7 +108,21 @@ app.get("/rutinas/:usuarioId", async (req, res) => {
   }
 });
 
-// ✅ Activar suscripción (simulada)
+// ✅ Eliminar rutina por ID
+app.delete("/rutinas/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.rutina.delete({
+      where: { id: parseInt(id) },
+    });
+    res.json({ mensaje: "Rutina eliminada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "No se pudo eliminar la rutina" });
+  }
+});
+
+// ✅ Activar suscripción
 app.put("/suscripcion/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -122,7 +137,51 @@ app.put("/suscripcion/:id", async (req, res) => {
   }
 });
 
-// ✅ Inicio del servidor
+// ✅ Guardar progreso de rutina
+app.post("/progreso", async (req, res) => {
+  const { usuarioId, rutinaId, completado } = req.body;
+
+  try {
+    const progreso = await prisma.progreso.upsert({
+      where: {
+        usuarioId_rutinaId: {
+          usuarioId,
+          rutinaId,
+        },
+      },
+      update: {
+        completado,
+        fecha: new Date(),
+      },
+      create: {
+        usuarioId,
+        rutinaId,
+        completado,
+      },
+    });
+
+    res.json(progreso);
+  } catch (err) {
+    res.status(500).json({ error: "Error al guardar progreso" });
+  }
+});
+
+// ✅ Obtener progreso por usuario
+app.get("/progreso/:usuarioId", async (req, res) => {
+  const { usuarioId } = req.params;
+
+  try {
+    const progreso = await prisma.progreso.findMany({
+      where: { usuarioId: parseInt(usuarioId) },
+    });
+
+    res.json(progreso);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener progreso" });
+  }
+});
+
+// ✅ Iniciar servidor
 app.listen(4000, () => {
-  console.log(" Backend corriendo en http://localhost:4000");
+  console.log("✅ Backend corriendo en http://localhost:4000");
 });
