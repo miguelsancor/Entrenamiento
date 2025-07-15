@@ -40,25 +40,45 @@ export default function AlumnoDashboard() {
   };
 
   const marcarCompletada = async (rutinaId: number, completado: boolean) => {
-    await fetch("http://localhost:4000/progreso", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        usuarioId: usuario.id,
-        rutinaId,
-        completado,
-      }),
-    });
+    if (completado) {
+      await fetch("http://localhost:4000/progreso", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuarioId: usuario.id,
+          rutinaId,
+          completado,
+        }),
+      });
 
-    setProgreso((prev) =>
-      prev.map((p) =>
-        p.rutinaId === rutinaId ? { ...p, completado } : p
-      ).concat(
-        progreso.find((p) => p.rutinaId === rutinaId)
-          ? []
-          : [{ rutinaId, completado }]
-      )
-    );
+      setProgreso((prev) =>
+        prev.map((p) =>
+          p.rutinaId === rutinaId ? { ...p, completado } : p
+        ).concat(
+          progreso.find((p) => p.rutinaId === rutinaId)
+            ? []
+            : [{ rutinaId, completado }]
+        )
+      );
+    } else {
+      await fetch("http://localhost:4000/progreso", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuarioId: usuario.id,
+          rutinaId,
+        }),
+      });
+
+      setProgreso((prev) =>
+        prev.filter((p) => p.rutinaId !== rutinaId)
+      );
+    }
+  };
+
+  const obtenerEmbedYoutube = (url: string): string | null => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 
   return (
@@ -67,7 +87,9 @@ export default function AlumnoDashboard() {
         <h2 className="text-3xl font-bold text-gray-800">
           Bienvenido, {usuario.nombre}
         </h2>
-        <h3 className="text-xl text-gray-600 mb-4">🏋️‍♂️ Tus Rutinas Asignadas</h3>
+        <h3 className="text-xl text-gray-600 mb-4">
+          🏋️‍♂️ Tus Rutinas Asignadas
+        </h3>
 
         {rutinas.map((rutina) => (
           <div
@@ -77,7 +99,10 @@ export default function AlumnoDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h4 className="text-lg font-semibold text-gray-800">
-                  {rutina.nombre} <span className="text-sm text-gray-500">({rutina.tipo})</span>
+                  {rutina.nombre}{" "}
+                  <span className="text-sm text-gray-500">
+                    ({rutina.tipo})
+                  </span>
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">
                   <strong>Días:</strong> {rutina.dias.join(", ")}
@@ -97,11 +122,31 @@ export default function AlumnoDashboard() {
               </div>
             </div>
 
-            <ul className="mt-3 list-disc ml-6 text-sm text-gray-700 space-y-1">
-              {rutina.ejercicios.map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
-            </ul>
+            <div className="mt-4 space-y-3">
+              {rutina.ejercicios.map((e, i) => {
+                const embed = obtenerEmbedYoutube(e);
+                return embed ? (
+                  <a
+                    key={i}
+                    href={e}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <iframe
+                      src={embed}
+                      className="w-full h-48 rounded-lg shadow border"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </a>
+                ) : (
+                  <p key={i} className="text-sm text-gray-700 ml-6 list-disc">
+                    {e}
+                  </p>
+                );
+              })}
+            </div>
           </div>
         ))}
 

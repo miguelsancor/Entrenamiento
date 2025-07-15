@@ -4,7 +4,7 @@ type Rutina = {
   id: number;
   nombre: string;
   tipo: string;
-  ejercicios: string[];
+  ejercicios: string[]; // Los ejercicios pueden incluir URLs
   dias: string[];
 };
 
@@ -21,7 +21,7 @@ type Alumno = {
   progreso?: Progreso[];
 };
 
-const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 export default function InstructorDashboard() {
   const usuario = JSON.parse(localStorage.getItem("usuario")!);
@@ -92,9 +92,14 @@ export default function InstructorDashboard() {
     window.location.reload();
   };
 
+  const obtenerEmbedYoutube = (url: string): string | null => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-gray-100 to-blue-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-tr from-gray-100 to-blue-100 p-6 flex justify-center">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl p-8 space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-800">
             👨‍🏫 Instructor: <span className="text-blue-600">{usuario.nombre}</span>
@@ -102,12 +107,12 @@ export default function InstructorDashboard() {
           <p className="text-gray-500 mt-1">Asignar rutina a alumno</p>
         </div>
 
-        {/* Formulario de asignación */}
+        {/* Formulario */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <select
             value={alumnoId}
             onChange={(e) => setAlumnoId(e.target.value)}
-            className="p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="p-3 border rounded-xl shadow-sm"
           >
             <option value="">Selecciona un alumno</option>
             {alumnos.map((a) => (
@@ -122,13 +127,13 @@ export default function InstructorDashboard() {
             placeholder="Nombre de la rutina"
             value={nombreRutina}
             onChange={(e) => setNombreRutina(e.target.value)}
-            className="p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="p-3 border rounded-xl shadow-sm"
           />
 
           <select
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
-            className="p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="p-3 border rounded-xl shadow-sm"
           >
             <option value="Funcional">Funcional</option>
             <option value="Fuerza">Fuerza</option>
@@ -141,7 +146,7 @@ export default function InstructorDashboard() {
             placeholder="Ejercicios separados por coma"
             value={ejercicios}
             onChange={(e) => setEjercicios(e.target.value)}
-            className="p-3 border rounded-xl shadow-sm col-span-1 md:col-span-2 resize-none h-28 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="p-3 border rounded-xl shadow-sm h-28 col-span-1 md:col-span-2 resize-none"
           />
 
           <div className="col-span-1 md:col-span-2 space-x-2">
@@ -173,50 +178,87 @@ export default function InstructorDashboard() {
           </button>
         </div>
 
-        {/* Lista de alumnos con rutinas y progreso */}
+        {/* Rutinas */}
         <div>
           <h3 className="text-xl font-semibold text-gray-700 mt-6 mb-4">
             📋 Alumnos y sus rutinas
           </h3>
 
-          {alumnos.map((alumno) => (
-            <div key={alumno.id} className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
-              <h4 className="text-md font-bold text-blue-700">
-                {alumno.nombre} ({alumno.email})
-              </h4>
+          {alumnos.map((alumno) => {
+            const completadas = alumno.progreso?.filter((p) => p.completado).length || 0;
+            const total = alumno.rutinas?.length || 0;
 
-              {alumno.rutinas && alumno.rutinas.length > 0 ? (
-                <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-gray-700">
-                  {alumno.rutinas.map((r) => {
-                    const progresoRutina = alumno.progreso?.find(
-                      (p) => p.rutinaId === r.id && p.completado
-                    );
-                    return (
-                      <li key={r.id}>
-                        <strong>{r.nombre}</strong> ({r.tipo}) - {r.ejercicios.join(", ")}{" "}
-                        <span className="ml-2 text-xs text-purple-600 font-semibold">
-                          [{r.dias.join(", ")}]
-                        </span>
-                        {progresoRutina && (
-                          <span className="ml-2 text-green-600 font-bold text-xs">
-                            ✅ Completado
+            return (
+              <div key={alumno.id} className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                <h4 className="text-md font-bold text-blue-700">
+                  {alumno.nombre} ({alumno.email})
+                </h4>
+
+                {total > 0 && (
+                  <p className="text-green-700 text-sm font-medium mt-1">
+                    ✅ Progreso: {completadas} de {total} completadas (
+                    {Math.round((completadas / total) * 100)}%)
+                  </p>
+                )}
+
+                {alumno.rutinas && alumno.rutinas.length > 0 ? (
+                  <ul className="mt-2 list-disc list-inside space-y-2 text-sm text-gray-700">
+                    {alumno.rutinas.map((r) => {
+                      const completado = alumno.progreso?.some(
+                        (p) => p.rutinaId === r.id && p.completado
+                      );
+                      return (
+                        <li key={r.id} className="ml-4">
+                          <strong>{r.nombre}</strong> ({r.tipo}){" "}
+                          <span className="text-xs text-purple-700">
+                            [{r.dias.join(", ")}]
                           </span>
-                        )}
-                        <button
-                          className="ml-3 text-red-600 hover:underline text-xs"
-                          onClick={() => eliminarRutina(r.id)}
-                        >
-                          Eliminar
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-gray-500 text-sm mt-1">Sin rutinas asignadas</p>
-              )}
-            </div>
-          ))}
+                          {completado && (
+                            <span className="ml-2 text-green-600 font-semibold text-xs">
+                              ✅ Completado
+                            </span>
+                          )}
+                          <div className="mt-2 ml-2 space-y-2">
+                            {r.ejercicios.map((e, i) => {
+                              const embed = obtenerEmbedYoutube(e);
+                              return embed ? (
+                                <a
+                                  key={i}
+                                  href={e}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <iframe
+                                    src={embed}
+                                    className="w-full max-w-sm h-48 rounded-xl shadow border"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                  />
+                                </a>
+                              ) : (
+                                <p key={i} className="text-gray-600">
+                                  {e}
+                                </p>
+                              );
+                            })}
+                          </div>
+                          <button
+                            className="mt-2 text-red-600 hover:underline text-xs"
+                            onClick={() => eliminarRutina(r.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm mt-1">Sin rutinas asignadas</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
