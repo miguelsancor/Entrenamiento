@@ -84,10 +84,10 @@ export default function AlumnoDashboard() {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-white to-blue-50">
       <div className="max-w-3xl mx-auto space-y-6">
-        <h2 className="text-3xl font-bold text-gray-800">
+        <h2 className="text-3xl font-bold text-white">
           Bienvenido, {usuario.nombre}
         </h2>
-        <h3 className="text-xl text-gray-600 mb-4">
+        <h3 className="text-xl text-white mb-4">
           🏋️‍♂️ Tus Rutinas Asignadas
         </h3>
 
