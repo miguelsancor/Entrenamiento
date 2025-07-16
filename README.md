@@ -70,4 +70,8 @@ npm run dev
 - Agregar nuevo campo en el backend
 ```
 npx prisma migrate dev --name add-dias-a-rutina
+
+docker compose down -v
+docker compose up --build
+
 ---

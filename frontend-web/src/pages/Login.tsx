@@ -12,7 +12,7 @@ export default function Login() {
 
   const registrar = async () => {
     try {
-      const res = await fetch("http://localhost:4000/register", {
+      const res = await fetch("http://192.168.0.3:4000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, nivel, rol }),
@@ -30,7 +30,7 @@ export default function Login() {
 
   const ingresar = async () => {
     try {
-      const res = await fetch("http://localhost:4000/login", {
+      const res = await fetch("http://192.168.0.3:4000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, rol }),
@@ -39,7 +39,12 @@ export default function Login() {
       const data: Usuario = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Error al iniciar sesión");
+        if (!res.ok) {
+        const errorData = await res.json();
+        alert(errorData.error || "Error al iniciar sesión");
+        return;
+      }
+
         return;
       }
 

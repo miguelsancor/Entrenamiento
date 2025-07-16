@@ -20,13 +20,13 @@ export default function AlumnoDashboard() {
 
   useEffect(() => {
     const cargarRutinas = async () => {
-      const res = await fetch(`http://localhost:4000/rutinas/${usuario.id}`);
+      const res = await fetch(`http://192.168.0.3:4000/rutinas/${usuario.id}`);
       const data = await res.json();
       setRutinas(data);
     };
 
     const cargarProgreso = async () => {
-      const res = await fetch(`http://localhost:4000/progreso/${usuario.id}`);
+      const res = await fetch(`http://192.168.0.3:4000/progreso/${usuario.id}`);
       const data = await res.json();
       setProgreso(data);
     };
@@ -41,7 +41,7 @@ export default function AlumnoDashboard() {
 
   const marcarCompletada = async (rutinaId: number, completado: boolean) => {
     if (completado) {
-      await fetch("http://localhost:4000/progreso", {
+      await fetch("http://192.168.0.3:4000/progreso", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,7 +61,7 @@ export default function AlumnoDashboard() {
         )
       );
     } else {
-      await fetch("http://localhost:4000/progreso", {
+      await fetch("http://192.168.0.3:4000/progreso", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
