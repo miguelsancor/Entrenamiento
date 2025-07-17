@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import '../App.css';
 
 type Rutina = {
   id: number;
@@ -31,6 +32,7 @@ export default function InstructorDashboard() {
   const [tipo, setTipo] = useState("Funcional");
   const [ejercicios, setEjercicios] = useState("");
   const [diasSeleccionados, setDiasSeleccionados] = useState<string[]>([]);
+  const [alumnoExpandido, setAlumnoExpandido] = useState<number | null>(null);
 
   const camposCompletos =
     alumnoId && nombreRutina && ejercicios && diasSeleccionados.length > 0;
@@ -95,6 +97,10 @@ export default function InstructorDashboard() {
   const obtenerEmbedYoutube = (url: string): string | null => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
+  const toggleExpandirAlumno = (id: number) => {
+    setAlumnoExpandido(prev => (prev === id ? null : id));
   };
 
   return (
@@ -177,64 +183,74 @@ export default function InstructorDashboard() {
 
             return (
               <div key={alumno.id} style={{ marginBottom: "1.5rem" }}>
-                <h4 style={{ color: "#60a5fa" }}>{alumno.nombre} ({alumno.email})</h4>
-                {total > 0 && (
-                  <p style={{ color: "#22c55e" }}>
-                    ✅ Progreso: {completadas} de {total} completadas (
-                    {Math.round((completadas / total) * 100)}%)
-                  </p>
-                )}
-                {alumno.rutinas?.length ? (
-                  <ul style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}>
-                    {alumno.rutinas.map((r) => {
-                      const completado = alumno.progreso?.some(
-                        (p) => p.rutinaId === r.id && p.completado
-                      );
-                      return (
-                        <li key={r.id}>
-                          <strong>{r.nombre}</strong> ({r.tipo}){" "}
-                          <span style={{ fontSize: "0.8rem", color: "#c084fc" }}>
-                            [{r.dias.join(", ")}]
-                          </span>
-                          {completado && (
-                            <span style={{ marginLeft: "0.5rem", color: "#22c55e" }}>
-                              ✅ Completado
-                            </span>
-                          )}
-                          <div style={{ marginTop: "0.5rem" }}>
-                            {r.ejercicios.map((e, i) => {
-                              const embed = obtenerEmbedYoutube(e);
-                              return embed ? (
-                                <a
-                                  key={i}
-                                  href={e}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <iframe
-                                    src={embed}
-                                    className="iframe"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                  />
-                                </a>
-                              ) : (
-                                <p key={i} style={{ color: "#d1d5db" }}>{e}</p>
-                              );
-                            })}
-                          </div>
-                          <button
-                            style={{ marginTop: "0.5rem", color: "#ef4444", fontSize: "0.8rem" }}
-                            onClick={() => eliminarRutina(r.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p style={{ color: "#9ca3af" }}>Sin rutinas asignadas</p>
+                <h4
+                  style={{ color: "#60a5fa", cursor: "pointer" }}
+                  onClick={() => toggleExpandirAlumno(alumno.id)}
+                >
+                  {alumno.nombre} ({alumno.email})
+                </h4>
+
+                {alumnoExpandido === alumno.id && (
+                  <>
+                    {total > 0 && (
+                      <p style={{ color: "#22c55e" }}>
+                        ✅ Progreso: {completadas} de {total} completadas (
+                        {Math.round((completadas / total) * 100)}%)
+                      </p>
+                    )}
+                    {alumno.rutinas?.length ? (
+                      <ul style={{ marginTop: "0.5rem", paddingLeft: "1rem" }}>
+                        {alumno.rutinas.map((r) => {
+                          const completado = alumno.progreso?.some(
+                            (p) => p.rutinaId === r.id && p.completado
+                          );
+                          return (
+                            <li key={r.id}>
+                              <strong>{r.nombre}</strong> ({r.tipo}){" "}
+                              <span style={{ fontSize: "0.8rem", color: "#c084fc" }}>
+                                [{r.dias.join(", ")}]
+                              </span>
+                              {completado && (
+                                <span style={{ marginLeft: "0.5rem", color: "#22c55e" }}>
+                                  ✅ Completado
+                                </span>
+                              )}
+                              <div style={{ marginTop: "0.5rem" }}>
+                                {r.ejercicios.map((e, i) => {
+                                  const embed = obtenerEmbedYoutube(e);
+                                  return embed ? (
+                                    <a
+                                      key={i}
+                                      href={e}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <iframe
+                                        src={embed}
+                                        className="iframe"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                      />
+                                    </a>
+                                  ) : (
+                                    <p key={i} style={{ color: "#d1d5db" }}>{e}</p>
+                                  );
+                                })}
+                              </div>
+                              <button
+                                style={{ marginTop: "0.5rem", color: "#ef4444", fontSize: "0.8rem" }}
+                                onClick={() => eliminarRutina(r.id)}
+                              >
+                                Eliminar
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p style={{ color: "#9ca3af" }}>Sin rutinas asignadas</p>
+                    )}
+                  </>
                 )}
               </div>
             );
