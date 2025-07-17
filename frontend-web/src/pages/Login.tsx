@@ -36,18 +36,13 @@ export default function Login() {
         body: JSON.stringify({ email, rol }),
       });
 
-      const data: Usuario = await res.json();
-
       if (!res.ok) {
-        if (!res.ok) {
         const errorData = await res.json();
         alert(errorData.error || "Error al iniciar sesión");
         return;
       }
 
-        return;
-      }
-
+      const data: Usuario = await res.json();
       localStorage.setItem("usuario", JSON.stringify(data));
 
       if (data.rol === "alumno") navigate("/alumno-dashboard");
@@ -78,22 +73,30 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             style={styles.input}
           />
-          <select value={nivel} onChange={(e) => setNivel(e.target.value)} style={styles.select}>
+          <select
+            value={nivel}
+            onChange={(e) => setNivel(e.target.value)}
+            style={styles.select}
+          >
             <option value="Básico">Básico</option>
             <option value="Intermedio">Intermedio</option>
             <option value="Avanzado">Avanzado</option>
           </select>
-          <select value={rol} onChange={(e) => setRol(e.target.value)} style={styles.select}>
+          <select
+            value={rol}
+            onChange={(e) => setRol(e.target.value)}
+            style={styles.select}
+          >
             <option value="alumno">Alumno</option>
             <option value="instructor">Instructor</option>
           </select>
         </div>
 
         <div style={styles.buttonGroup}>
-          <button style={styles.button} onClick={registrar}>
+          <button style={{ ...styles.button, backgroundColor: "#2563eb" }} onClick={registrar}>
             Registrarse
           </button>
-          <button style={{ ...styles.button, backgroundColor: "#222" }} onClick={ingresar}>
+          <button style={styles.button} onClick={ingresar}>
             Ingresar
           </button>
         </div>
@@ -109,53 +112,61 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "linear-gradient(135deg, #f0f2f5, #e0e4ea)",
+    background: "linear-gradient(135deg, #0f172a, #1e293b)", // Fondo oscuro azulado
   },
   card: {
-    backgroundColor: "#fff",
-    padding: "2rem",
+    backgroundColor: "#1f2937", // Gris oscuro
+    padding: "2.5rem",
     borderRadius: "1rem",
-    boxShadow: "0 0 30px rgba(0,0,0,0.1)",
+    boxShadow: "0 0 20px rgba(0,0,0,0.4)",
     width: "100%",
     maxWidth: "400px",
+    color: "#fff",
   },
   title: {
-    marginBottom: "1.5rem",
-    fontSize: "1.5rem",
+    marginBottom: "1.8rem",
+    fontSize: "1.7rem",
     fontWeight: "bold",
     textAlign: "center",
   },
   inputGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "0.8rem",
-    marginBottom: "1.2rem",
+    gap: "1rem",
+    marginBottom: "1.5rem",
   },
   input: {
     width: "100%",
     padding: "0.75rem",
-    border: "1px solid #ccc",
+    border: "1px solid #4b5563",
     borderRadius: "0.5rem",
+    backgroundColor: "#111827",
+    color: "#f9fafb",
     fontSize: "1rem",
   },
   select: {
-    padding: "0.6rem",
+    padding: "0.75rem",
     borderRadius: "0.5rem",
-    border: "1px solid #ccc",
+    border: "1px solid #4b5563",
+    backgroundColor: "#111827",
+    color: "#f9fafb",
     fontSize: "1rem",
   },
   buttonGroup: {
     display: "flex",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     marginTop: "1rem",
   },
   button: {
-    padding: "0.75rem 1.5rem",
+    flex: 1,
+    padding: "0.75rem",
+    margin: "0 0.25rem",
     border: "none",
     borderRadius: "0.5rem",
-    backgroundColor: "#333",
+    backgroundColor: "#10b981", // Verde Tailwind
     color: "#fff",
-    cursor: "pointer",
     fontWeight: "bold",
+    cursor: "pointer",
+    fontSize: "1rem",
   },
 };

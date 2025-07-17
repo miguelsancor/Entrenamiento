@@ -82,47 +82,45 @@ export default function AlumnoDashboard() {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-br from-white to-blue-50">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-black text-white p-8">
+      <div className="max-w-4xl mx-auto space-y-8">
         <h2 className="text-3xl font-bold text-white">
           Bienvenido, {usuario.nombre}
         </h2>
-        <h3 className="text-xl text-white mb-4">
+        <h3 className="text-xl font-semibold text-white">
           🏋️‍♂️ Tus Rutinas Asignadas
         </h3>
 
         {rutinas.map((rutina) => (
           <div
             key={rutina.id}
-            className="bg-white p-4 rounded-xl shadow-md border border-gray-200"
+            className="bg-[#1a1a1a] p-5 rounded-xl border border-gray-700 shadow-md"
           >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-3">
               <div>
-                <h4 className="text-lg font-semibold text-gray-800">
+                <h4 className="text-lg font-bold text-white">
                   {rutina.nombre}{" "}
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-400">
                     ({rutina.tipo})
                   </span>
                 </h4>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-300 mt-1">
                   <strong>Días:</strong> {rutina.dias.join(", ")}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600">Completado</label>
+                <label className="text-sm text-white font-medium">✅ Completado</label>
                 <input
                   type="checkbox"
                   checked={estaCompletada(rutina.id)}
-                  onChange={(e) =>
-                    marcarCompletada(rutina.id, e.target.checked)
-                  }
-                  className="h-5 w-5"
+                  onChange={(e) => marcarCompletada(rutina.id, e.target.checked)}
+                  className="h-5 w-5 accent-blue-500"
                 />
               </div>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="space-y-4 mt-4">
               {rutina.ejercicios.map((e, i) => {
                 const embed = obtenerEmbedYoutube(e);
                 return embed ? (
@@ -135,15 +133,13 @@ export default function AlumnoDashboard() {
                   >
                     <iframe
                       src={embed}
-                      className="w-full h-48 rounded-lg shadow border"
+                      className="iframe"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
                   </a>
                 ) : (
-                  <p key={i} className="text-sm text-gray-700 ml-6 list-disc">
-                    {e}
-                  </p>
+                  <p key={i} className="text-sm text-gray-300 ml-2">• {e}</p>
                 );
               })}
             </div>
@@ -151,7 +147,7 @@ export default function AlumnoDashboard() {
         ))}
 
         {rutinas.length === 0 && (
-          <p className="text-gray-500">No tienes rutinas asignadas.</p>
+          <p className="text-gray-400">No tienes rutinas asignadas.</p>
         )}
       </div>
     </div>
