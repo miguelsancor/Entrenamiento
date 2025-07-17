@@ -37,13 +37,13 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     const cargarDatos = async () => {
-      const alumnosRes = await fetch("http://192.168.0.3:4000/usuarios?rol=alumno");
+      const alumnosRes = await fetch("http://34.75.5.236:4000/usuarios?rol=alumno");
       const alumnosData = await alumnosRes.json();
 
       const alumnosCompletos = await Promise.all(
         alumnosData.map(async (alumno: Alumno) => {
-          const rutinasRes = await fetch(`http://192.168.0.3:4000/rutinas/${alumno.id}`);
-          const progresoRes = await fetch(`http://192.168.0.3:4000/progreso/${alumno.id}`);
+          const rutinasRes = await fetch(`http://34.75.5.236:4000/rutinas/${alumno.id}`);
+          const progresoRes = await fetch(`http://34.75.5.236:4000/progreso/${alumno.id}`);
           const rutinas = await rutinasRes.json();
           const progreso = await progresoRes.json();
           return { ...alumno, rutinas, progreso };
@@ -65,7 +65,7 @@ export default function InstructorDashboard() {
   const asignarRutina = async () => {
     if (!camposCompletos) return;
 
-    await fetch("http://192.168.0.3:4000/rutinas", {
+    await fetch("http://34.75.5.236:4000/rutinas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -85,7 +85,7 @@ export default function InstructorDashboard() {
   };
 
   const eliminarRutina = async (rutinaId: number) => {
-    await fetch(`http://192.168.0.3:4000/rutinas/${rutinaId}`, {
+    await fetch(`http://34.75.5.236:4000/rutinas/${rutinaId}`, {
       method: "DELETE",
     });
     alert("❌ Rutina eliminada");
