@@ -7,7 +7,8 @@ COPY . .
 RUN npm install
 
 # Generar Prisma Client
-RUN npx prisma generate
+RUN chmod +x ./node_modules/.bin/prisma \
+  && npx prisma generate
 
 EXPOSE 4000
 
