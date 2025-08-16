@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -17,6 +17,7 @@ model Usuario {
   suscripcion  Boolean    @default(false)
   rutinas      Rutina[]
   progresos    Progreso[]
+  sesiones     Sesion[]
   creadoEn     DateTime   @default(now())
 }
 
@@ -24,11 +25,12 @@ model Rutina {
   id         Int        @id @default(autoincrement())
   nombre     String
   tipo       String
-  ejercicios String
-  dias       String
+  ejercicios String      // guardamos JSON string (array)
+  dias       String      // guardamos JSON string (array)
   usuarioId  Int
   usuario    Usuario    @relation(fields: [usuarioId], references: [id])
   progresos  Progreso[]
+  sesiones   Sesion[]
 }
 
 model Progreso {
@@ -40,5 +42,35 @@ model Progreso {
   fecha      DateTime @default(now())
   completado Boolean  @default(false)
 
-  @@unique([usuarioId, rutinaId]) // <- necesario para upsert
+  @@unique([usuarioId, rutinaId])
+}
+
+model Sesion {
+  id         Int       @id @default(autoincrement())
+  fecha      DateTime  @default(now())
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId  Int
+  rutina     Rutina    @relation(fields: [rutinaId], references: [id])
+  rutinaId   Int
+  notas      String?
+  fatiga     Int?      // 0-10
+  dolor      Int?      // 0-10
+  series     Serie[]
+
+  @@index([usuarioId, rutinaId, fecha])
+}
+
+model Serie {
+  id          Int       @id @default(autoincrement())
+  sesion      Sesion    @relation(fields: [sesionId], references: [id])
+  sesionId    Int
+  ejercicio   String
+  setNumber   Int
+  reps        Int?
+  peso        Float?
+  rpe         Float?
+  completado  Boolean   @default(false)
+  completedAt DateTime?
+
+  @@unique([sesionId, ejercicio, setNumber])
 }
