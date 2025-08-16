@@ -286,46 +286,47 @@ export default function AlumnoDashboard() {
 
                           {/* Vídeos + Sets */}
                           <div className="space-y-4 mt-4">
-                            {rutina.ejercicios.map((e, i) => {
-                              const embed = obtenerEmbedYoutube(e);
-                              return (
-                                <div key={i} className="space-y-2">
-                                  {embed ? (
-                                    // Contenedor 16:9. El CSS .embed-frame hace que el iframe ocupe TODO
-                                    <div className="embed-frame">
-                                      <iframe
-                                        src={embed}
-                                        title={`video-${rutina.id}-${i}`}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowFullScreen
-                                        loading="lazy"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm text-gray-300 ml-2">• {e}</p>
-                                  )}
-
-                                  <a
-                                    href={e}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-gray-400 underline"
-                                  >
-                                    Abrir en YouTube
-                                  </a>
-
-                                  {sesiones[rutina.id] && (
-                                    <ExerciseSets
-                                      sesionId={sesiones[rutina.id]}
-                                      ejercicio={e}
-                                      usuarioId={usuario.id}
-                                      defaultSets={3}
+                          {rutina.ejercicios.map((e, i) => {
+                            const embed = obtenerEmbedYoutube(e);
+                            return (
+                              <div key={i} className="space-y-2">
+                                {embed ? (
+                                  // Mantiene tu marco y tamaño actual (16:9), el iframe llena todo
+                                  <div className="embed-frame">
+                                    <iframe
+                                      src={`${embed}?modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                                      title={`video-${rutina.id}-${i}`}
+                                      className="absolute inset-0 w-full h-full"
+                                      // ⚠️ Permitimos lo necesario, quitamos picture-in-picture
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                                      allowFullScreen
+                                      // ⚠️ Bloquea popups y navegación fuera de la página
+                                      sandbox="allow-scripts allow-same-origin allow-presentation"
+                                      referrerPolicy="strict-origin-when-cross-origin"
                                     />
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-300 ml-2">• {e}</p>
+                                )}
+
+                                {/* Quitamos este link para que nadie salga a YouTube */}
+                                {/* <a href={e} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 underline">
+                                    Abrir en YouTube
+                                  </a> */}
+
+                                {sesiones[rutina.id] && (
+                                  <ExerciseSets
+                                    sesionId={sesiones[rutina.id]}
+                                    ejercicio={e}
+                                    usuarioId={usuario.id}
+                                    defaultSets={3}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
                         </div>
                       ))}
                     </div>
