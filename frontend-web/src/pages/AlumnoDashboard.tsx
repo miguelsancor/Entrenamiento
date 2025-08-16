@@ -18,7 +18,7 @@ type Progreso = {
 };
 
 const API = "http://34.75.5.236:4000";
-const DIAS_SEMANA = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 export default function AlumnoDashboard() {
   const rawUsuario = localStorage.getItem("usuario");
@@ -30,10 +30,8 @@ export default function AlumnoDashboard() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  // sesiones activas por rutina
-  const [sesiones, setSesiones] = useState<Record<number, number>>({}); // rutinaId -> sesionId
-
-  // resumen semanal del backend
+  // sesiones activas por rutina (rutinaId -> sesionId)
+  const [sesiones, setSesiones] = useState<Record<number, number>>({});
   const [resumenAPI, setResumenAPI] = useState<any | null>(null);
 
   useEffect(() => {
@@ -46,7 +44,6 @@ export default function AlumnoDashboard() {
           fetch(`${API}/progreso/${usuario.id}`),
           fetch(`${API}/resumen/${usuario.id}`),
         ]);
-
         if (!rRes.ok || !pRes.ok) throw new Error("No se pudo cargar la información.");
 
         const [rutinasData, progresoData, resumenData] = await Promise.all([
@@ -54,28 +51,28 @@ export default function AlumnoDashboard() {
           pRes.json(),
           sumRes.ok ? sumRes.json() : Promise.resolve(null),
         ]);
-
         if (!mounted) return;
+
         setRutinas(rutinasData);
         setProgreso(progresoData);
         setResumenAPI(resumenData);
 
-        // abrir el siguiente día pendiente
-        const compSet = new Set(progresoData.filter((p:any)=>p.completado).map((p:any)=>p.rutinaId));
+        // abrir primer día con algo pendiente
+        const compSet = new Set(progresoData.filter((p: any) => p.completado).map((p: any) => p.rutinaId));
         const nextDay =
-          DIAS_SEMANA.find((d) =>
-            rutinasData.some((r: Rutina) => r.dias.includes(d) && !compSet.has(r.id))
-          ) ||
+          DIAS_SEMANA.find((d) => rutinasData.some((r: Rutina) => r.dias.includes(d) && !compSet.has(r.id))) ||
           DIAS_SEMANA.find((d) => rutinasData.some((r: Rutina) => r.dias.includes(d))) ||
           null;
         if (nextDay) setDiasVisibles([nextDay]);
-      } catch (e:any) {
+      } catch (e: any) {
         setErr(e.message || "Error inesperado");
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [usuario.id]);
 
   const estaCompletada = (rutinaId: number) =>
@@ -116,13 +113,10 @@ export default function AlumnoDashboard() {
   };
 
   const toggleDia = (dia: string) => {
-    setDiasVisibles((prev) =>
-      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]
-    );
+    setDiasVisibles((prev) => (prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]));
   };
 
   const iniciarSesion = async (rutinaId: number) => {
-    // crea o devuelve la de hoy
     const res = await fetch(`${API}/sesiones`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -133,21 +127,29 @@ export default function AlumnoDashboard() {
     setSesiones((prev) => ({ ...prev, [rutinaId]: data.id }));
   };
 
-  // Resumen rápido (por si se cae el endpoint, calculamos base)
   const resumenQuick = useMemo(() => {
     const total = rutinas.length;
-    const completadas = rutinas.filter((r) =>
-      progreso.some((p) => p.rutinaId === r.id && p.completado)
-    ).length;
+    const completadas = rutinas.filter((r) => progreso.some((p) => p.rutinaId === r.id && p.completado)).length;
     const pendientes = Math.max(0, total - completadas);
     const adherencia = total ? Math.round((completadas / total) * 100) : 0;
     return { total, completadas, pendientes, adherencia };
   }, [rutinas, progreso]);
 
+  const resumen = resumenAPI
+    ? {
+        total: resumenAPI.totalRutinas,
+        completadas: resumenAPI.completadas,
+        pendientes: Math.max(0, (resumenAPI.totalRutinas || 0) - (resumenAPI.completadas || 0)),
+        adherencia: resumenAPI.adherencia,
+        seriesSemana: resumenAPI.seriesSemana,
+        volumenSemana: Math.round(resumenAPI.volumenSemana || 0),
+      }
+    : { ...resumenQuick, seriesSemana: 0, volumenSemana: 0 };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="min-h-screen bg-black text-white p-6">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
           <div className="h-10 w-1/2 bg-gray-800 animate-pulse rounded" />
           <div className="h-24 w-full bg-gray-800 animate-pulse rounded" />
           <div className="h-48 w-full bg-gray-800 animate-pulse rounded" />
@@ -158,38 +160,20 @@ export default function AlumnoDashboard() {
 
   if (err) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-black text-white p-6">
+        <div className="mx-auto w-full max-w-6xl">
           <p className="text-red-400">⚠️ {err}</p>
         </div>
       </div>
     );
   }
 
-  const resumen = resumenAPI
-    ? {
-        total: resumenAPI.totalRutinas,
-        completadas: resumenAPI.completadas,
-        pendientes:
-          Math.max(0, (resumenAPI.totalRutinas || 0) - (resumenAPI.completadas || 0)),
-        adherencia: resumenAPI.adherencia,
-        seriesSemana: resumenAPI.seriesSemana,
-        volumenSemana: Math.round(resumenAPI.volumenSemana || 0),
-      }
-    : { ...resumenQuick, seriesSemana: 0, volumenSemana: 0 };
-
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="mx-auto w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Bienvenido, {usuario.nombre}</h2>
-          <button
-            onClick={() => setDiasVisibles(DIAS_SEMANA)}
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500"
-          >
-            Expandir semana
-          </button>
         </div>
 
         {/* Resumen */}
@@ -202,128 +186,162 @@ export default function AlumnoDashboard() {
           <StatCard label="Volumen (7d)" value={`${resumen.volumenSemana}`} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Calendar usuarioId={usuario.id} />
-        <Badges usuarioId={usuario.id} />
-      </div>
+        {/* Acordeones superiores */}
+        <details className="rounded-xl border border-gray-800 bg-[#101010] overflow-hidden">
+          <summary className="list-none cursor-pointer select-none p-4 flex items-center justify-between">
+            <div>
+              <div className="font-semibold">📆 Calendario</div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                Muestra por día lo programado (plan) y lo realizado (hecho).
+              </div>
+            </div>
+            <span className="text-gray-400">▼</span>
+          </summary>
+          <div className="p-4 border-t border-gray-800">
+            <Calendar usuarioId={usuario.id} />
+          </div>
+        </details>
 
-        <h3 className="text-xl font-semibold">🏋️‍♂️ Tus Rutinas por Día</h3>
+        <details className="rounded-xl border border-gray-800 bg-[#101010] overflow-hidden">
+          <summary className="list-none cursor-pointer select-none p-4 flex items-center justify-between">
+            <div>
+              <div className="font-semibold">🏅 Rachas e Insignias</div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                Racha = días seguidos con sesión; insignias por constancia y rachas.
+              </div>
+            </div>
+            <span className="text-gray-400">▼</span>
+          </summary>
+          <div className="p-4 border-t border-gray-800">
+            <Badges usuarioId={usuario.id} />
+          </div>
+        </details>
 
-        {DIAS_SEMANA.map((dia) => {
-          const rutinasDia = rutinas.filter((r) => r.dias.includes(dia));
-          if (rutinasDia.length === 0) return null;
+        {/* Rutinas por día (acordeón abierto por defecto) */}
+        <details className="rounded-xl border border-gray-800 bg-[#101010] overflow-hidden" open>
+          <summary className="list-none cursor-pointer select-none p-4 flex items-center justify-between">
+            <div>
+              <div className="font-semibold">🏋️‍♂️ Tus Rutinas por Día</div>
+              <div className="text-xs text-gray-400 mt-0.5">
+                Abre el día, inicia sesión y registra tus sets (reps/peso/RPE). Marca la rutina al finalizar.
+              </div>
+            </div>
+            <span className="text-gray-400">▼</span>
+          </summary>
 
-          const pendientesDia = rutinasDia.filter((r) => !estaCompletada(r.id)).length;
+          <div className="p-4 border-t border-gray-800">
+            {DIAS_SEMANA.map((dia) => {
+              const rutinasDia = rutinas.filter((r) => r.dias.includes(dia));
+              if (rutinasDia.length === 0) return null;
+              const pendientesDia = rutinasDia.filter((r) => !estaCompletada(r.id)).length;
 
-          return (
-            <div key={dia}>
-              <h4
-                className="text-lg font-bold cursor-pointer text-blue-400 border-b border-gray-700 pb-1 mb-3 flex items-center justify-between"
-                onClick={() => toggleDia(dia)}
-                role="button"
-                aria-expanded={diasVisibles.includes(dia)}
-              >
-                <span>📅 {dia}</span>
-                <span className="text-sm text-gray-400">
-                  {pendientesDia === 0 ? "Todo completo ✅" : `${pendientesDia} pendiente(s)`}
-                </span>
-              </h4>
+              return (
+                <div key={dia} className="mb-6">
+                  <h4
+                    className="text-lg font-bold cursor-pointer text-blue-400 border-b border-gray-700 pb-1 mb-3 flex items-center justify-between"
+                    onClick={() => toggleDia(dia)}
+                    role="button"
+                    aria-expanded={diasVisibles.includes(dia)}
+                  >
+                    <span>📅 {dia}</span>
+                    <span className="text-sm text-gray-400">
+                      {pendientesDia === 0 ? "Todo completo ✅" : `${pendientesDia} pendiente(s)`}
+                    </span>
+                  </h4>
 
-              {diasVisibles.includes(dia) && (
-                <div className="space-y-6">
-                  {rutinasDia.map((rutina) => (
-                    <div
-                      key={rutina.id}
-                      className="bg-[#121212] p-5 rounded-xl border border-gray-800 shadow-md"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                        <div>
-                          <h5 className="text-lg font-bold">
-                            {rutina.nombre}{" "}
-                            <span className="text-sm text-gray-400">({rutina.tipo})</span>
-                          </h5>
-                        </div>
+                  {diasVisibles.includes(dia) && (
+                    <div className="space-y-6">
+                      {rutinasDia.map((rutina) => (
+                        <div
+                          key={rutina.id}
+                          className="bg-[#121212] p-5 rounded-xl border border-gray-800 shadow-md"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                            <div>
+                              <h5 className="text-lg font-bold">
+                                {rutina.nombre}{" "}
+                                <span className="text-sm text-gray-400">({rutina.tipo})</span>
+                              </h5>
+                            </div>
 
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => iniciarSesion(rutina.id)}
-                            className="px-3 py-1 rounded bg-green-600 hover:bg-green-500"
-                          >
-                            {sesiones[rutina.id] ? "Continuar sesión" : "Iniciar sesión"}
-                          </button>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => iniciarSesion(rutina.id)}
+                                className="px-3 py-1 rounded bg-green-600 hover:bg-green-500"
+                              >
+                                {sesiones[rutina.id] ? "Continuar sesión" : "Iniciar sesión"}
+                              </button>
 
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium">✅ Completado</label>
-                            <input
-                              type="checkbox"
-                              checked={estaCompletada(rutina.id)}
-                              onChange={(e) =>
-                                marcarCompletada(rutina.id, e.target.checked)
-                              }
-                              className="h-5 w-5 accent-blue-500"
-                            />
+                              <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium">✅ Completado</label>
+                                <input
+                                  type="checkbox"
+                                  checked={estaCompletada(rutina.id)}
+                                  onChange={(e) => marcarCompletada(rutina.id, e.target.checked)}
+                                  className="h-5 w-5 accent-blue-500"
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Videos + Sets */}
-                      <div className="space-y-4 mt-4">
-                        {rutina.ejercicios.map((e, i) => {
-                          const embed = obtenerEmbedYoutube(e);
-                          return (
-                            <div key={i} className="space-y-3">
-                              {embed ? (
-                                <div className="w-full">
-                                  <div
-                                    className="relative w-full overflow-hidden rounded-lg border border-gray-800"
-                                    style={{ paddingTop: "56.25%" }}
-                                  >
-                                    <iframe
-                                      title={`video-${rutina.nombre}-${i}`}
-                                      src={embed}
-                                      className="absolute top-0 left-0 w-full h-full"
-                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                      allowFullScreen
-                                      loading="lazy"
-                                    />
-                                  </div>
+                          {/* Videos + Sets */}
+                          <div className="space-y-4 mt-4">
+                            {rutina.ejercicios.map((e, i) => {
+                              const embed = obtenerEmbedYoutube(e);
+                              return (
+                                <div key={i} className="space-y-2">
+                                  {embed ? (
+                                    <div
+                                      className="relative w-full overflow-hidden rounded-xl border border-gray-800 bg-black"
+                                      style={{ paddingTop: "56.25%" }}
+                                    >
+                                      <iframe
+                                        src={embed}
+                                        title={`video-${rutina.id}-${i}`}
+                                        className="absolute inset-0 w-full h-full"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-300 ml-2">• {e}</p>
+                                  )}
+
                                   <a
                                     href={e}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs text-gray-400 underline mt-1 inline-block"
+                                    className="text-xs text-gray-400 underline"
                                   >
                                     Abrir en YouTube
                                   </a>
+
+                                  {sesiones[rutina.id] && (
+                                    <ExerciseSets
+                                      sesionId={sesiones[rutina.id]}
+                                      ejercicio={e}
+                                      usuarioId={usuario.id}
+                                      defaultSets={3}
+                                    />
+                                  )}
                                 </div>
-                              ) : (
-                                <p className="text-sm text-gray-300 ml-2">• {e}</p>
-                              )}
-
-                              {/* Sets del ejercicio (solo si hay sesión activa) */}
-                              {sesiones[rutina.id] && (
-                                <ExerciseSets
-                                  sesionId={sesiones[rutina.id]}
-                                  ejercicio={e}
-                                  usuarioId={usuario.id}
-                                  defaultSets={3}
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
 
-        {rutinas.length === 0 && (
-          <p className="text-gray-400">No tienes rutinas asignadas.</p>
-        )}
+            {rutinas.length === 0 && (
+              <p className="text-gray-400">No tienes rutinas asignadas.</p>
+            )}
+          </div>
+        </details>
       </div>
     </div>
   );
