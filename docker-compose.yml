@@ -2,15 +2,23 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "4000:4000"
     volumes:
-      - ./backend:/app
-    command: npm run dev
+      - ./backend:/app              # código en caliente
+      - /app/node_modules           # evita que el bind mount pise deps del contenedor
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npx prisma migrate deploy || true &&
+        npm run dev
+      "
 
   frontend:
     build:
       context: ./frontend-web
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     volumes:
@@ -19,4 +27,5 @@ services:
     command: npm run dev
 
 networks:
-  entrenamiento_net:
+  default:
+    name: entrenamiento_net
