@@ -7,24 +7,21 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
   && rm -rf /var/lib/apt/lists/*
 
-# Copiamos SOLO manifiestos y prisma para cachear deps
+# Solo manifiestos + prisma para cachear dependencias
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Usa npm ci si hay lockfile válido; si no, usa npm install (evita EUSAGE)
-RUN if [ -f package-lock.json ]; then \
-      npm ci --no-audit --no-fund ; \
-    else \
-      npm install --no-audit --no-fund ; \
-    fi
+# Intenta npm ci; si el lock está desfasado, cae a npm install
+# --include=dev garantiza que instalen devDependencies (nodemon, prisma)
+RUN npm ci --include=dev --no-audit --no-fund || npm install --include=dev --no-audit --no-fund
 
 # Genera Prisma Client en build (por si no montas en caliente)
 RUN npx prisma generate
 
-# Luego el resto del código
+# Resto del código
 COPY . .
 
 EXPOSE 4000
 
-# En producción usaría esto; en dev lo sobreescribe el compose con npm run dev
+# En producción usaría `node index.js`; en dev lo sobreescribe el compose
 CMD ["sh","-c","npx prisma migrate deploy || true; node index.js"]
