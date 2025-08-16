@@ -284,21 +284,18 @@ export default function AlumnoDashboard() {
                             </div>
                           </div>
 
-                          {/* Videos + Sets */}
+                          {/* Vídeos + Sets */}
                           <div className="space-y-4 mt-4">
                             {rutina.ejercicios.map((e, i) => {
                               const embed = obtenerEmbedYoutube(e);
                               return (
                                 <div key={i} className="space-y-2">
                                   {embed ? (
-                                    <div
-                                      className="relative w-full overflow-hidden rounded-xl border border-gray-800 bg-black"
-                                      style={{ paddingTop: "56.25%" }}
-                                    >
+                                    // Contenedor 16:9. El CSS .embed-frame hace que el iframe ocupe TODO
+                                    <div className="embed-frame">
                                       <iframe
                                         src={embed}
                                         title={`video-${rutina.id}-${i}`}
-                                        className="absolute inset-0 w-full h-full"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         allowFullScreen
                                         loading="lazy"

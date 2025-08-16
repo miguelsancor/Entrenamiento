@@ -67,3 +67,25 @@
   border: 2px dashed #999;
   filter: brightness(1.2); /* ayuda en modo oscuro */
 }
+
+/* Video 16:9 que ocupa TODO el marco */
+.embed-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;      /* 16:9 */
+  background: #000;
+  border: 1px solid #303030;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* El iframe ocupa 100% del contenedor */
+.embed-frame > iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  border: 0;
+}
+
