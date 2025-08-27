@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import ExerciseSets from "../components/ExerciseSets";
 import Calendar from "../components/Calendar";
 import Badges from "../components/Badges";
+import RestTimer from "../components/RestTimer";
 
 type Rutina = {
   id: number;
@@ -286,47 +287,40 @@ export default function AlumnoDashboard() {
 
                           {/* Vídeos + Sets */}
                           <div className="space-y-4 mt-4">
-                          {rutina.ejercicios.map((e, i) => {
-                            const embed = obtenerEmbedYoutube(e);
-                            return (
-                              <div key={i} className="space-y-2">
-                                {embed ? (
-                                  // Mantiene tu marco y tamaño actual (16:9), el iframe llena todo
-                                  <div className="embed-frame">
-                                    <iframe
-                                      src={`${embed}?modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
-                                      title={`video-${rutina.id}-${i}`}
-                                      className="absolute inset-0 w-full h-full"
-                                      // ⚠️ Permitimos lo necesario, quitamos picture-in-picture
-                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                                      allowFullScreen
-                                      // ⚠️ Bloquea popups y navegación fuera de la página
-                                      sandbox="allow-scripts allow-same-origin allow-presentation"
-                                      referrerPolicy="strict-origin-when-cross-origin"
+                            {rutina.ejercicios.map((e, i) => {
+                              const embed = obtenerEmbedYoutube(e);
+                              return (
+                                <div key={i} className="space-y-2">
+                                  {embed ? (
+                                    // Marco 16:9, el iframe llena todo (sin sacar al usuario de la página)
+                                    <div className="relative aspect-video rounded-xl overflow-hidden bg-black/50">
+                                      <iframe
+                                        src={`${embed}?modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`}
+                                        title={`video-${rutina.id}-${i}`}
+                                        className="absolute inset-0 w-full h-full"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                                        allowFullScreen
+                                        sandbox="allow-scripts allow-same-origin allow-presentation"
+                                        referrerPolicy="strict-origin-when-cross-origin"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-300 ml-2">• {e}</p>
+                                  )}
+
+                                  {/* Sets */}
+                                  {sesiones[rutina.id] && (
+                                    <ExerciseSets
+                                      sesionId={sesiones[rutina.id]}
+                                      ejercicio={e}
+                                      usuarioId={usuario.id}
+                                      defaultSets={3}
                                     />
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-gray-300 ml-2">• {e}</p>
-                                )}
-
-                                {/* Quitamos este link para que nadie salga a YouTube */}
-                                {/* <a href={e} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 underline">
-                                    Abrir en YouTube
-                                  </a> */}
-
-                                {sesiones[rutina.id] && (
-                                  <ExerciseSets
-                                    sesionId={sesiones[rutina.id]}
-                                    ejercicio={e}
-                                    usuarioId={usuario.id}
-                                    defaultSets={3}
-                                  />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       ))}
                     </div>

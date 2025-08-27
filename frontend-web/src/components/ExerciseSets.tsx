@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import RestTimer from "./RestTimer";
 
 const API = "http://34.75.5.236:4000";
 
@@ -27,6 +28,7 @@ export default function ExerciseSets({
   const [series, setSeries] = useState<Serie[]>([]);
   const [loading, setLoading] = useState(true);
   const [timer, setTimer] = useState<number>(0); // segundos
+  const [timerMax, setTimerMax] = useState<number>(0); // total del descanso actual
   const [historial, setHistorial] = useState<any[]>([]);
 
   // cargar series ya existentes
@@ -99,7 +101,10 @@ export default function ExerciseSets({
     );
     await saveSerie(updated);
     // iniciar descanso 90s cuando marcamos como hecho
-    if (updated.completado) setTimer(90);
+    if (updated.completado) {
+      setTimerMax(90);
+      setTimer(90);
+    }
   };
 
   const onChange = async (setNumber: number, field: "reps" | "peso" | "rpe", value: string) => {
@@ -127,6 +132,14 @@ export default function ExerciseSets({
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm text-gray-300">
           Descanso: <span className="font-mono">{timer}s</span>
+          {/* Reinicio discreto */}
+          <button
+            onClick={() => { setTimerMax(90); setTimer(90); }}
+            className="ml-2 text-xs text-emerald-400 hover:text-emerald-300 underline decoration-dotted"
+            title="Reiniciar descanso (90s)"
+          >
+            ⟳ 90s
+          </button>
         </div>
         <div className="text-sm text-gray-300">
           Volumen: <span className="font-semibold">{Math.round(volumenTotal)} kg·reps</span>
@@ -227,6 +240,9 @@ export default function ExerciseSets({
           </ul>
         </div>
       )}
+
+      {/* === Timer flotante + popup profesional === */}
+      <RestTimer value={timer} show={timer > 0} warnAt={5} autoExpandAt={10} corner="br" max={timerMax} />
     </div>
   );
 }
